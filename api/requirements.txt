@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+
+cassandra-driver
+neo4j
+pymongo
+redis
+
+sqlalchemy
+psycopg2-binary
+
+pydantic
+python-dotenv
