@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from routers.billing import router as billing_router
 from routers.equipment import router as equipment_router
 from routers.sensors import router as sensors_router
+from routers.grid import router as grid_router
 
 app = FastAPI(
     title="GridSense API",
@@ -12,6 +13,7 @@ app = FastAPI(
 app.include_router(billing_router)
 app.include_router(equipment_router)
 app.include_router(sensors_router)
+app.include_router(grid_router)
 
 
 @app.get("/")
