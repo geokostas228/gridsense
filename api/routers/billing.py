@@ -168,3 +168,42 @@ def list_invoices():
     return {
         "invoices": [dict(row) for row in rows]
     }
+
+@router.get("/account/{premise_id}")
+def get_account_by_premise(premise_id: str):
+    query = text("""
+        SELECT
+            ba.account_id,
+            ba.meter_id AS premise_id,
+            ba.active,
+            c.customer_id,
+            c.full_name,
+            c.email,
+            t.tariff_name,
+            t.price_per_kwh,
+            COALESCE(SUM(i.amount_due), 0) AS current_balance
+        FROM billing_accounts ba
+        JOIN customers c ON ba.customer_id = c.customer_id
+        JOIN tariffs t ON ba.tariff_id = t.tariff_id
+        LEFT JOIN invoices i ON ba.account_id = i.account_id
+        WHERE ba.meter_id = :premise_id
+        GROUP BY ba.account_id, ba.meter_id, ba.active,
+                 c.customer_id, c.full_name, c.email,
+                 t.tariff_name, t.price_per_kwh;
+    """)
+
+    with engine.connect() as connection:
+        row = connection.execute(
+            query,
+            {"premise_id": premise_id}
+        ).mappings().first()
+
+    if row is None:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    return dict(row)
+
+
+@router.post("/invoice")
+def generate_monthly_invoice(invoice: InvoiceCreate):
+    return create_invoice(invoice)
