@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from fastapi import APIRouter
-from pydantic import BaseModel
+from models.cassandra import SensorReadingCreate
 
 from db.cassandra import session
 
@@ -8,16 +8,6 @@ router = APIRouter(
     prefix="/sensors",
     tags=["Sensors"]
 )
-
-
-class SensorReadingCreate(BaseModel):
-    sensor_id: str
-    district_id: str
-    ts: datetime
-    voltage: float
-    current: float
-    power_factor: float
-    temperature: float
 
 
 @router.post("/readings")

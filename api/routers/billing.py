@@ -1,24 +1,10 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from models.postgres import CustomerCreate, InvoiceCreate
 from sqlalchemy import text
 
 from db.postgres import engine
 
 router = APIRouter(prefix="/billing", tags=["Billing"])
-
-
-class CustomerCreate(BaseModel):
-    full_name: str
-    email: str
-    address: str | None = None
-
-
-class InvoiceCreate(BaseModel):
-    account_id: int
-    billing_period_start: str
-    billing_period_end: str
-    total_kwh: float
-
 
 @router.get("/test")
 def test_postgres():
