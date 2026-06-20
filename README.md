@@ -1,85 +1,33 @@
-# GridSense – Distributed Smart Grid Data Platform
+# GridSense – Advanced Data Management Final Assessment
 
 ## Overview
 
-GridSense is a distributed data management platform designed for monitoring and managing a smart electrical grid. The system integrates multiple database technologies, each selected according to its strengths and the characteristics of the data being managed.
+GridSense is a multi-database smart-grid management platform developed for the Advanced Data Management course.
 
-The project demonstrates the use of relational, document, graph, time-series, and in-memory databases within a unified architecture exposed through a FastAPI application.
+The system demonstrates the use of multiple database technologies, each selected for a specific workload:
+
+* **PostgreSQL** – customer billing and invoices
+* **MongoDB** – equipment catalog and asset metadata
+* **Cassandra** – high-volume smart sensor telemetry
+* **Neo4j** – electrical grid topology and network traversal
+* **Redis** – alert caching and dashboard acceleration
+* **FastAPI** – unified REST API layer
+
+The entire platform is deployed using Docker Compose and exposed through a single API.
 
 ---
 
 ## Architecture
 
-The platform consists of the following services:
-
-| Service              | Technology | Purpose                                             |
-| -------------------- | ---------- | --------------------------------------------------- |
-| API Gateway          | FastAPI    | Unified REST API                                    |
-| Billing Database     | PostgreSQL | Customer accounts, tariffs, invoices, and payments  |
-| Equipment Catalog    | MongoDB    | Flexible equipment metadata and maintenance history |
-| Time-Series Database | Cassandra  | High-volume sensor readings                         |
-| Network Topology     | Neo4j      | Grid connectivity and fault propagation analysis    |
-| Cache and Alerts     | Redis      | Dashboard caching and active fault alerts           |
-
----
-
-## Database Design Decisions
-
-### PostgreSQL
-
-PostgreSQL is used for billing and customer management because the data is highly structured and requires strong consistency, transactions, and referential integrity.
-
-Examples:
-
-* Customers
-* Billing accounts
-* Tariffs
-* Invoices
-* Payments
-
-### MongoDB
-
-MongoDB stores equipment information because different equipment types have different attributes and metadata.
-
-Examples:
-
-* Transformers
-* Smart meters
-* Maintenance records
-* Equipment specifications
-
-### Cassandra
-
-Cassandra is used for smart-grid sensor readings because it is designed for high write throughput and scalable time-series workloads.
-
-Examples:
-
-* Voltage measurements
-* Current measurements
-* Temperature readings
-* Power factor readings
-
-### Neo4j
-
-Neo4j models the physical grid topology and enables graph traversal queries.
-
-Examples:
-
-* Substations
-* Feeders
-* Transformers
-* Smart meters
-* Fault impact analysis
-
-### Redis
-
-Redis is used for low-latency caching and temporary alert storage.
-
-Examples:
-
-* Dashboard summaries
-* Active fault notifications
-* Temporary operational data
+| Component         | Technology     | Purpose                                  |
+| ----------------- | -------------- | ---------------------------------------- |
+| Billing Database  | PostgreSQL     | Customer accounts, tariffs, invoices     |
+| Equipment Catalog | MongoDB        | Asset metadata and equipment records     |
+| Telemetry Store   | Cassandra      | High-volume time-series sensor readings  |
+| Grid Topology     | Neo4j          | Network relationships and fault analysis |
+| Cache & Alerts    | Redis          | Active alerts and dashboard caching      |
+| API Layer         | FastAPI        | Unified REST interface                   |
+| Deployment        | Docker Compose | Container orchestration                  |
 
 ---
 
@@ -87,184 +35,312 @@ Examples:
 
 ```text
 gridsense/
+│
 ├── api/
 │   ├── db/
 │   ├── models/
 │   ├── routers/
 │   └── main.py
+│
 ├── postgres/
 │   └── init.sql
+│
 ├── mongo/
-│   └── seed.js
+│
 ├── cql/
 │   └── init.cql
-├── docker-compose.yml
-├── Dockerfile
-├── .env
-├──README.md
+│
+├── neo4j/
+│   └── import/
+│       └── seed.cypher
+│
 ├── scripts/
-    └── seed.py
+│   └── seed.py
+│
+├── docker-compose.yml
+├── .env.example
+└── README.md
 ```
 
 ---
 
-## Setup Instructions
+## Environment Configuration
 
-### Prerequisites
+Create a `.env` file using `.env.example`.
 
-* Docker
-* Docker Compose
-* Git
+Example:
 
-### Clone Repository
+```env
+POSTGRES_DB=gridsense_billing
+POSTGRES_USER=gridsense_user
+POSTGRES_PASSWORD=gridsense_pass
+
+MONGO_INITDB_ROOT_USERNAME=gridsense_admin
+MONGO_INITDB_ROOT_PASSWORD=gridsense_pass
+MONGO_DB=gridsense_catalog
+
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=gridsense_pass
+
+REDIS_PASSWORD=gridsense_pass
+
+CASSANDRA_KEYSPACE=gridsense
+```
+
+No credentials are stored in source code.
+
+---
+
+## Running the System
+
+### Build and Start
 
 ```bash
-git clone <repository-url>
-cd gridsense
+
+gridsense/docker compose up --build
 ```
 
-### Start Services
+Run in background:
 
 ```bash
-docker compose up --build
+docker compose up -d --build
 ```
 
-The API will be available at:
+Stop:
 
-```text
-http://localhost:8000
+```bash
+docker compose down
 ```
 
-Swagger documentation:
+---
+
+## API Documentation
+
+Swagger UI:
 
 ```text
 http://localhost:8000/docs
 ```
 
----
+OpenAPI JSON:
 
-## Example API Calls
-
-### Retrieve Customers
-
-```http
-GET /billing/customers
-```
-
-### Retrieve Equipment Information
-
-```http
-GET /equipment/TX-1001
-```
-
-### Insert Sensor Reading
-
-```http
-POST /sensors/readings
-```
-
-Example payload:
-
-```json
-{
-  "sensor_id": "S-1001",
-  "district_id": "North",
-  "ts": "2026-06-09T16:10:00",
-  "voltage": 231.4,
-  "current": 13.2,
-  "power_factor": 0.98,
-  "temperature": 42.5
-}
-```
-
-### Fault Impact Analysis
-
-```http
-GET /grid/fault-impact/FDR-1
-```
-
-### Retrieve Cached Dashboard
-
-```http
-GET /cache/dashboard/North
+```text
+http://localhost:8000/openapi.json
 ```
 
 ---
 
-## Demonstrated Features
+# Database Initialization
 
-* Multi-database architecture
-* RESTful API design
-* Docker container orchestration
-* Time-series data storage
-* Graph traversal queries
-* Relational transaction processing
-* Flexible document storage
-* Distributed caching
-* API documentation through Swagger
+## PostgreSQL
+
+Schema file:
+
+```text
+postgres/init.sql
+```
+
+Creates:
+
+* customers
+* tariffs
+* billing_accounts
+* invoices
+* payments
 
 ---
-## Data Seeding
 
-The project includes an automated multi-database seeding script:
+## Cassandra
+
+Initialization script:
+
+```text
+cql/init.cql
+```
+
+Creates:
+
+* sensor_readings_by_sensor
+* sensor_readings_by_minute
+
+---
+
+## Neo4j
+
+Topology seed file:
+
+```text
+neo4j/import/seed.cypher
+```
+
+Creates:
+
+* Substations
+* Transformers
+* SmartMeters
+* FEEDS relationships
+* SUPPLIES relationships
+
+---
+
+# Data Seeding
+
+The project includes a complete multi-database seeding script.
+
+Run:
 
 ```bash
 python3 scripts/seed.py
 ```
 
-The script populates all database systems with realistic sample data and is designed to be idempotent.
+The script is idempotent and can be executed multiple times without creating duplicate seed records.
 
-### Seeded Data
+---
 
-#### PostgreSQL
+## Seeded PostgreSQL Data
 
 * 100 consumer accounts
 * Billing accounts
-* Sample invoice records
-* Tariff information
+* Tariff data
+* Invoice records
 
-#### MongoDB
+---
+
+## Seeded MongoDB Data
 
 * 30 equipment records
-* 3 equipment types:
+* Transformer documents
+* Smart meter documents
+* Switchgear documents
 
-  * Transformers
-  * Smart Meters
-  * Switchgear
-* Different document structures for each equipment type
+Each equipment type uses a different document structure.
 
-#### Neo4j
+---
+
+## Seeded Neo4j Data
 
 * 10 substations
 * 40 transformers
 * 200 smart meters
-* Grid connectivity relationships
+* Grid relationships
 
-#### Cassandra
+---
+
+## Seeded Cassandra Data
 
 * 20 sensor IDs
 * 50,000 sensor readings
-* Voltage, current, temperature and power-factor measurements
+* Voltage measurements
+* Current measurements
+* Power factor measurements
+* Temperature measurements
 
-### Running the Seeder
+---
 
-Ensure all containers are running:
+# REST API Endpoints
 
-```bash
-docker compose up -d
+## Billing
+
+```text
+GET    /billing/customers
+POST   /billing/customers
+
+GET    /billing/accounts
+
+GET    /billing/invoices
+POST   /billing/invoices
+
+GET    /billing/account/{premise_id}
+POST   /billing/invoice
 ```
 
-Then execute:
+---
+
+## Equipment Catalog
+
+```text
+GET    /equipment
+GET    /equipment/{asset_id}
+
+POST   /equipment
+PATCH  /equipment/{asset_id}
+```
+
+---
+
+## Sensor Telemetry
+
+```text
+POST   /sensors/readings
+
+GET    /sensors/{sensor_id}/readings
+GET    /sensors/{sensor_id}/summary
+
+GET    /sensors/dashboard/latest
+```
+
+---
+
+## Grid Topology
+
+```text
+GET    /grid/nodes
+
+POST   /grid/nodes
+POST   /grid/relationships
+
+GET    /grid/fault-impact/{node_id}
+GET    /grid/restore-paths/{node_id}
+GET    /grid/upstream/{node_id}
+```
+
+---
+
+## Alerts
+
+```text
+GET    /alerts/active
+POST   /alerts/publish
+```
+
+---
+
+# Example Workflow
+
+1. Start the platform using Docker Compose.
+2. Seed all databases:
 
 ```bash
 python3 scripts/seed.py
 ```
 
-The script can be executed multiple times without creating duplicate records.
+3. Open Swagger:
 
-## Author
+```text
+http://localhost:8000/docs
+```
 
-Konstantinos [Surname]
+4. Explore and test the REST endpoints.
+5. Verify database contents through PostgreSQL, MongoDB, Cassandra, Neo4j, and Redis.
 
-Advanced Data Management – Final Assignment
+---
 
+# Technologies Used
+
+* Python 3
+* FastAPI
+* PostgreSQL 15
+* MongoDB 7
+* Cassandra 4
+* Neo4j 5
+* Redis 7
+* Docker
+* Docker Compose
+
+---
+
+# Author
+
+Konstantinos Georgiou
+
+Advanced Data Management – University of Thessaly
