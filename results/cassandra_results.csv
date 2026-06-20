@@ -1,0 +1,4 @@
+consistency_level,events,throughput_events_per_sec,p50_latency_ms,p95_latency_ms,errors
+ONE,3000,1588.15,0.557,0.983,0
+LOCAL_QUORUM,3000,1844.29,0.5,0.886,0
+ALL,3000,2150.68,0.439,0.59,0

@@ -1,0 +1,7 @@
+query,backend,mean_latency_ms
+firmware_version starts with 3,MongoDB,0.9369
+firmware_version starts with 3,PostgreSQL JSONB,0.2271
+SmartMeter rated_voltage > 230,MongoDB,0.3436
+SmartMeter rated_voltage > 230,PostgreSQL JSONB,0.2747
+count grouped by type,MongoDB,0.417
+count grouped by type,PostgreSQL JSONB,0.3284
